@@ -1,0 +1,3 @@
+[submodule "magelab"]
+	path = magelab
+	url = https://github.com/sidsrinivasan/magelab.git

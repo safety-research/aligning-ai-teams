@@ -1,0 +1,11 @@
+{
+  "id_column": "id",
+  "task_type": "recommendation",
+  "metrics": [
+    "views_at_k",
+    "misinfo_percentage_at_k",
+    "weighted_misinfo_exposure",
+    "ndcg"
+  ],
+  "k_values": [10, 20, 50]
+}

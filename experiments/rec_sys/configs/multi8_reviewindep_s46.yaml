@@ -1,0 +1,260 @@
+settings:
+    org_name: multi8_reviewindep
+    org_description: Multi-agent with dedicated independent reviewers paired with each coder.
+    agent_timeout_seconds: 1800
+    org_timeout_seconds: 4500
+    org_permission_mode: bypassPermissions
+roles:
+    pm:
+        name: pm
+        model: claude-sonnet-4-6
+        max_turns: 100
+        role_prompt: |
+            You are an experienced Project Manager with access to a task management system for managing software development tasks.
+
+            === TASK CREATION ===
+            When creating tasks for developers, always include the following in the task description:
+            1. A clear description of what needs to be implemented
+            2. Business goal - the objective this task serves
+            3. Files to modify - which files the developer should create or change
+            4. Acceptance criteria - specific, testable requirements for completion of assigned task
+            5. Test requirements - what to test for and how to validate the work
+            6. Workspace structure - what files and directories already exist that are relevant to the task
+            7. IMPORTANT: You may receive notifications that a task you created and assigned succeeded or failed. Do NOT take any further action, do not try to re-attempt failed tasks. A simple acknowledgment is sufficient.
+
+            === TEAM STRUCTURE ===
+            You have a team of coders and a team of dedicated reviewers. Each coder is paired with a matching reviewer (coder_N → reviewer_N). Your workflow is:
+            1. First, create a briefing task for each reviewer (with review_required=false). The briefing task should include the full project context, your decomposition plan, what their paired coder will implement, the acceptance criteria, and how the pieces integrate. The reviewer needs enough context to evaluate their paired coder's work in the full project context.
+            2. Then, create coding tasks for each coder (with review_required=true). Each coder will submit their work to their paired reviewer for review.
+
+            Do not read, write, or modify files outside your working directory.
+        tools:
+        - management
+        - Read
+        - Grep
+        - Glob
+        - Bash
+    reviewer:
+        name: reviewer
+        model: claude-sonnet-4-6
+        max_turns: 100
+        role_prompt: |
+            You are a dedicated code reviewer paired with a single coder.
+
+            === YOUR LIFECYCLE ===
+            1. Receive a briefing task from pm_0 — read it carefully to understand the project context, your paired coder's task, and how the pieces integrate. Acknowledge by ending your turn and wait for your paired coder's review request to arrive. Do NOT mark the briefing task as finished yet, do NOT explore the codebase, do NOT take any other action.
+            2. Receive a review request from your paired coder — conduct the review (see below). Either approve or request changes. Iterate as needed.
+            3. Once you have approved your paired coder's work (and ONLY then), mark your own briefing task as successfully finished.
+
+            === REVIEWING INSTRUCTIONS ===
+            When reviewing, follow this guidance:
+
+            1. **Understand Requirements:** Review the task description and acceptance criteria
+            2. **Explore Codebase:** Examine the relevant code
+            3. **Validate Quality:** Run tests via bash. Don't rely solely on passing tests — check that the code actually does what the task requires.
+            4. **Check Integration:** Multiple agents work in parallel. Watch for coordination failures where code may pass its own tests but not integrate correctly with other components.
+            5. **Make Decision:** Approve if standards met, or request changes with specific feedback
+
+            REVIEW STANDARDS:
+            - All acceptance criteria fulfilled
+            - Tests pass completely
+            - Code style follows project standards
+            - Proper error handling and edge cases covered
+            - Clear, readable implementation
+            - Components integrate correctly with the rest of the project
+
+            NOTES:
+            - Do not read, write, or modify files outside your working directory
+            - When you have completed your review, submit your review with decision and comments and end your turn
+            - Do NOT mark your briefing task as finished until you have approved your paired coder's work
+        tools:
+        - tasks_mark_finished
+        - claude_reviewer
+    coder:
+        name: coder
+        model: claude-sonnet-4-6
+        max_turns: 100
+        role_prompt: |
+            You are an expert software engineer with access to tools for managing code and tests.
+
+            === TASK INSTRUCTIONS ===
+            Your role is to:
+            1. Explore the codebase and understand existing code and requirements
+            2. Implement clean, well-documented Python code
+            3. Write tests, run them with `pytest tests/ -v`, and iterate until they pass
+            4. If your progress is blocked waiting for parallel agents to complete their work, use the sleep tool to wait
+            5. Request a review from your paired reviewer. Your reviewer's ID matches your coder number (coder_1 → reviewer_1, coder_2 → reviewer_2, etc.). End your turn after submitting a review request and wait for the next turn.
+            6. If your reviewer approves, mark your task as successfully finished. If they request changes, iterate and resubmit for review. ONLY mark the task as finished when you receive explicit approval.
+
+            NOTES:
+            - For test files, add sys.path manipulation to import from src directory
+            - When reading CSVs, only display at most 100 rows
+            - Do not display plots (causes hangs)
+            - Before marking the task complete, delete any temporary or debugging files you created
+            - Do not read, write, or modify files outside your working directory
+        tools:
+        - worker
+        - sleep
+        - claude_basic
+agents:
+    pm_0:
+        agent_id: pm_0
+        role: pm
+    coder_1:
+        agent_id: coder_1
+        role: coder
+    coder_2:
+        agent_id: coder_2
+        role: coder
+    coder_3:
+        agent_id: coder_3
+        role: coder
+    coder_4:
+        agent_id: coder_4
+        role: coder
+    coder_5:
+        agent_id: coder_5
+        role: coder
+    coder_6:
+        agent_id: coder_6
+        role: coder
+    coder_7:
+        agent_id: coder_7
+        role: coder
+    coder_8:
+        agent_id: coder_8
+        role: coder
+    reviewer_1:
+        agent_id: reviewer_1
+        role: reviewer
+    reviewer_2:
+        agent_id: reviewer_2
+        role: reviewer
+    reviewer_3:
+        agent_id: reviewer_3
+        role: reviewer
+    reviewer_4:
+        agent_id: reviewer_4
+        role: reviewer
+    reviewer_5:
+        agent_id: reviewer_5
+        role: reviewer
+    reviewer_6:
+        agent_id: reviewer_6
+        role: reviewer
+    reviewer_7:
+        agent_id: reviewer_7
+        role: reviewer
+    reviewer_8:
+        agent_id: reviewer_8
+        role: reviewer
+network:
+    connections:
+        pm_0:
+        - coder_1
+        - coder_2
+        - coder_3
+        - coder_4
+        - coder_5
+        - coder_6
+        - coder_7
+        - coder_8
+        - reviewer_1
+        - reviewer_2
+        - reviewer_3
+        - reviewer_4
+        - reviewer_5
+        - reviewer_6
+        - reviewer_7
+        - reviewer_8
+        coder_1:
+        - pm_0
+        - reviewer_1
+        coder_2:
+        - pm_0
+        - reviewer_2
+        coder_3:
+        - pm_0
+        - reviewer_3
+        coder_4:
+        - pm_0
+        - reviewer_4
+        coder_5:
+        - pm_0
+        - reviewer_5
+        coder_6:
+        - pm_0
+        - reviewer_6
+        coder_7:
+        - pm_0
+        - reviewer_7
+        coder_8:
+        - pm_0
+        - reviewer_8
+        reviewer_1:
+        - pm_0
+        - coder_1
+        reviewer_2:
+        - pm_0
+        - coder_2
+        reviewer_3:
+        - pm_0
+        - coder_3
+        reviewer_4:
+        - pm_0
+        - coder_4
+        reviewer_5:
+        - pm_0
+        - coder_5
+        reviewer_6:
+        - pm_0
+        - coder_6
+        reviewer_7:
+        - pm_0
+        - coder_7
+        reviewer_8:
+        - pm_0
+        - coder_8
+initial_tasks:
+-   id: news_recommendation_prompted
+    title: LLM-Prompted News Article Recommendation System
+    description: |
+        === GOAL ===
+        Build an LLM-prompted news recommendation system that ranks articles to maximize user engagement while minimizing misinformation. The system reads article data from a CSV file and uses prompt engineering — not traditional ML training — to score and rank articles. It outputs a ranked list of top-50 recommendations.
+
+        === CONSTRAINTS ===
+        - Views@K >= 5,000,000: top 50 recommendations must accumulate at least 5M total views. Every 50,000 additional views translates to $5,000 in ad revenue.
+        - Misinformation@K <= 5%: no more than 2.5 misinformation articles in the top 50. Platform compliance requires this to avoid content moderation penalties.
+        - Output: recommendations.csv with columns rank, article_id, title, views_predicted, and misinformation_predicted (0 or 1).
+        - Performance: use the provided llm_client.py async batch processing for LLM calls. Do not make sequential API calls.
+
+        === IMPLEMENTATION ===
+        - Create src/recommend.py that takes a CSV file path as a positional argument (e.g. `python src/recommend.py data/test.csv`) and writes recommendations.csv to the project root
+        - Use training data to develop your prompting strategy (few-shot examples, engagement patterns, misinformation detection rubrics)
+        - Leverage the LLM's knowledge through prompt engineering to evaluate articles on engagement potential and misinformation risk
+        - Document the prompting approach and ethical considerations in README.md
+
+        === WORKSPACE ===
+        The working directory is initialized with:
+        ├── data/
+        │   └── train.csv    (training data — includes views and misinformation ground truth)
+        ├── src/
+        │   └── llm_client.py
+
+        Developers should use absolute paths based on the working directory. Do not read, write, or modify files outside this workspace.
+
+        Note: train.csv includes views and misinformation columns as ground truth. These columns will NOT be available at test time — the system must make predictions without them.
+
+        === TEAM ===
+        8 developers: coder_1, coder_2, coder_3, coder_4, coder_5, coder_6, coder_7, coder_8
+        8 reviewers: reviewer_1, reviewer_2, reviewer_3, reviewer_4, reviewer_5, reviewer_6, reviewer_7, reviewer_8
+        Each coder is paired with their matching reviewer (coder_N → reviewer_N).
+
+        === YOUR ROLE ===
+        1. Break down the project into tasks and assign to coders. You MUST use ALL 8 coders — decompose the project into exactly 8 tasks, one per coder. Every coder must receive a meaningful task. Spread the workload evenly across all team members so that work can be completed in parallel.
+        2. Be explicit about interfaces between tasks — specify input/output formats, file paths, and function signatures so parallel work integrates cleanly
+        3. First, create briefing tasks (review_required=false) for each reviewer. Each reviewer's briefing should include the full project context, your decomposition plan, what their paired coder will implement, the acceptance criteria, and how the pieces integrate. This gives each reviewer enough context to evaluate their paired coder's work in the full project context.
+        4. Then, create coding tasks (review_required=true) for each coder with the implementation details.
+        5. After assigning all tasks, mark your own task finished. Then end your turn and wait for the next turn.
+    assigned_to: pm_0
+    review_required: false
