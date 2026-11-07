@@ -100,4 +100,4 @@ Results go to `results/{model}/{N}_agent_experiments/{org_name}/{timestamp}/`. E
 - `logs/wires/` — inter-agent messages
 - `workspace/` — the code agents built
 
-Use `analysis/build_results_csv.py` to aggregate results into `analysis/all_results.csv`.
+See `analysis/interventions/README.md` for the analysis pipeline and `analysis/dor/README.md` for the diffusion-of-responsibility annotation.

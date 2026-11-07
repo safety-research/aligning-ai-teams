@@ -1,16 +1,16 @@
 # Aligning AI Teams
 
-Experiments on interventions to reduce misalignment in multi-agent LLM organizations, built on [magelab](https://github.com/sidsrinivasan/magelab).
+Code for the paper *Aligning AI Teams*: experiments on interventions to reduce misalignment in multi-agent LLM teams, built on [magelab](https://github.com/sidsrinivasan/magelab).
 
 ## Experiments
 
 | Experiment | Agents | Task |
 |------------|--------|------|
-| **Consultancy** | 1-9 | Write a client proposal for a given scenario |
-| **Sepsis** | 1-9 | Build a sepsis treatment prediction model |
-| **Rec Sys** | 1-9 | Build a news recommendation system |
+| **Consultancy** | 1, 11-13 | Write a client proposal for a given scenario |
+| **Sepsis** | 1, 9-17 | Build a sepsis treatment prediction model |
+| **Rec Sys** | 1, 9-17 | Build a news recommendation system |
 
-Each experiment lives in `experiments/<name>/` with its own configs, data, and evaluation scripts. See the `CLAUDE.md` in each experiment directory for detailed documentation.
+Each experiment lives in `experiments/<name>/` with its own configs, data, evaluation scripts, and analysis. See the `README.md` in each experiment directory for details.
 
 ## Setup
 
@@ -62,6 +62,7 @@ Common flags:
 - `--docker` — run in Docker (reuse existing image)
 - `--no-frontend` — disable the live dashboard
 - `--api-key [path]` / `--sub [path]` — authentication (required)
+- `--model MODEL` — override the model for all roles. The configs specify Opus 4.1, Opus 4.6, and Sonnet 4.6; the Opus 4.7 and Mythos Preview runs in the paper used this flag (e.g. `--model claude-opus-4-7`).
 
 ### 3. `run_queue.sh`
 
@@ -98,3 +99,12 @@ To view all runs under a batch directory (each on its own port):
 ```bash
 uv run magelab --view-batch org.db -o <batch_dir>
 ```
+
+## Analysis
+
+Each experiment's `analysis/` directory reproduces the paper's figures and tables:
+
+- `analysis/interventions/` — `aggregate_results.py` walks the raw `results/` tree and writes `all_results.csv` (consultancy: `all_results.csv.gz`); `walkthrough.ipynb` (using `analysis.py`) produces every figure in `analysis/figures/`. The committed CSVs let you regenerate all figures without the raw data.
+- `analysis/dor/` (sepsis, rec sys) — the diffusion-of-responsibility transcript annotation pipeline and the mediation regressions (`regression.ipynb`). These read per-run annotation files from the raw results.
+
+See the `README.md` in each analysis subdirectory for details. Analyses were run with the library versions pinned in `uv.lock`.

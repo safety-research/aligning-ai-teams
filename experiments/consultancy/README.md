@@ -93,4 +93,4 @@ Results go to `results/{scenario}/{model}/{N}_agent_experiments/{config_stem}/{t
 - `experiment_results.json` — evaluation scores + run metadata
 - `workspace/` — proposal files written by the communications director
 
-Use `analysis/build_results_csv.py` to aggregate results into `analysis/all_results.csv`.
+See `analysis/interventions/README.md` for the analysis pipeline.
