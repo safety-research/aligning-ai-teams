@@ -100,6 +100,10 @@ To view all runs under a batch directory (each on its own port):
 uv run magelab --view-batch org.db -o <batch_dir>
 ```
 
+## Raw data
+
+Raw run outputs for all three experiments are available here: https://doi.org/10.7910/DVN/8OYJES
+
 ## Analysis
 
 Each experiment's `analysis/` directory reproduces the paper's figures and tables:
